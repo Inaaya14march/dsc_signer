@@ -1,5 +1,5 @@
 app_name = "dsc_signer"
-app_title = "Digital Signature "
+app_title = "Dsc Signer"
 app_publisher = "AITS"
 app_description = "Digital Signer"
 app_email = "mumtaz@aits.com"
@@ -15,7 +15,7 @@ app_license = "mit"
 # 	{
 # 		"name": "dsc_signer",
 # 		"logo": "/assets/dsc_signer/logo.png",
-# 		"title": "Digital Signature ",
+# 		"title": "Dsc Signer",
 # 		"route": "/dsc_signer",
 # 		"has_permission": "dsc_signer.api.permission.has_app_permission"
 # 	}
