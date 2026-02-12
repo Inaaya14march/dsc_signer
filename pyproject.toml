@@ -3,7 +3,7 @@ name = "dsc_signer"
 authors = [
     { name = "AITS", email = "mumtaz@aits.com"}
 ]
-description = "App for DSC"
+description = "Digital Signer"
 requires-python = ">=3.10"
 readme = "README.md"
 dynamic = ["version"]

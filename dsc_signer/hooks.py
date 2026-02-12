@@ -1,7 +1,7 @@
 app_name = "dsc_signer"
 app_title = "Digital Signature "
 app_publisher = "AITS"
-app_description = "App for DSC"
+app_description = "Digital Signer"
 app_email = "mumtaz@aits.com"
 app_license = "mit"
 

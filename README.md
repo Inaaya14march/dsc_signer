@@ -1,6 +1,6 @@
 ### Digital Signature 
 
-App for DSC
+Digital Signer
 
 ### Installation
 
