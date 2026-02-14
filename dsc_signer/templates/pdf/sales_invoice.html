@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        .header {
+            text-align: center;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        .invoice-details {
+            margin-bottom: 20px;
+        }
+        .invoice-details td {
+            padding: 5px;
+        }
+        .footer {
+            text-align: center;
+            font-size: 12px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Sales Invoice</h1>
+        <p>Invoice Number: {{ doc.name }}</p>
+        <p>Date: {{ doc.posting_date }}</p>
+    </div>
+
+    <table class="invoice-details" width="100%" border="1" cellpadding="5">
+        <tr>
+            <th>Item</th>
+            <th>Quantity</th>
+            <th>Rate</th>
+            <th>Total</th>
+        </tr>
+        {% for item in doc.items %}
+        <tr>
+            <td>{{ item.item_code }}</td>
+            <td>{{ item.qty }}</td>
+            <td>{{ item.rate }}</td>
+            <td>{{ item.amount }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <div class="footer">
+        <p>Thank you for your business!</p>
+    </div>
+</body>
+</html>

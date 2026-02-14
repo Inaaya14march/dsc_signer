@@ -5,6 +5,13 @@ app_description = "Digital Signer"
 app_email = "mumtaz@aits.com"
 app_license = "mit"
 
+app_version = "1.0.0"
+
+# Include JS for Sales Invoice
+doctype_js = {
+    "Sales Invoice": "public/js/sales_invoice_sign.js"
+}
+
 # Apps
 # ------------------
 
