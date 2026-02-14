@@ -21,7 +21,16 @@ def sign_invoice(docname):
         f.write(pdf_data)
 
     # Get DSC settings (PFX file and password from settings)
-    pfx_file_path ="/home/frappe/frappe-bench/apps/dsc_signer/dsc_signer/config/DSC.pfx"  # Example path
+    
+    #pfx_file_path ="/home/frappe/frappe-bench/apps/dsc_signer/dsc_signer/config/DSC.pfx"  # Example path
+    import frappe
+
+pfx_file_path = frappe.get_app_path(
+    "dsc_signer",
+    "dsc_signer",
+    "config",
+    "DSC.pfx"
+)
     pfx_password = "ABCD@1234"; #frappe.conf.dsc_pfx_password  # Stored in site config
 
     # Sign the PDF
