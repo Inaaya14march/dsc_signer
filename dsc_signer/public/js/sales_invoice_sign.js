@@ -2,7 +2,7 @@ frappe.ui.form.on('Sales Invoice', {
     refresh: function(frm) {
         if (frm.doc.docstatus == 1) {
             frm.add_custom_button(__('Sign Invoice'), function() {
-                alert("");
+               
                 frappe.call({
                     method: 'dsc_signer.api.sign_invoice',
                     args: {
