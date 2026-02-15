@@ -3,6 +3,7 @@ from frappe.utils.pdf import get_pdf
 from frappe.utils.file_manager import save_file
 from .pdf_signer import sign_pdf
 from frappe import _
+import tempfile
 
 @frappe.whitelist()
 def sign_invoice(docname):
@@ -13,9 +14,11 @@ def sign_invoice(docname):
     html = frappe.render_template("templates/pdf/sales_invoice.html", {"doc": doc})
     pdf_data = get_pdf(html)
 
-    unsigned_pdf_path = f"/tmp/{docname}_unsigned.pdf"
-    signed_pdf_path = f"/tmp/{docname}_signed.pdf"
+    safe_docname = docname.replace("/", "_")
 
+    unsigned_pdf_path = tempfile.gettempdir() + f"/{safe_docname}_unsigned.pdf"
+    signed_pdf_path = tempfile.gettempdir() + f"/{safe_docname}_signed.pdf"
+    
     # Save the unsigned PDF temporarily
     with open(unsigned_pdf_path, "wb") as f:
         f.write(pdf_data)
