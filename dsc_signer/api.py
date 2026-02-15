@@ -37,13 +37,15 @@ def sign_invoice(docname):
     sign_pdf(unsigned_pdf_path, signed_pdf_path, pfx_file_path, pfx_password)
 
     # Save the signed PDF as an attachment
+    safe_docname = docname.replace("/", "_")
+
     with open(signed_pdf_path, "rb") as f:
         file_doc = save_file(
-            f"{docname}_Signed.pdf",
+            f"{safe_docname}_Signed.pdf",
             f.read(),
             "Sales Invoice",
             docname,
-            is_private=1
-        )
-
+        is_private=1,
+    )
+    
     return _("Signed Successfully")
