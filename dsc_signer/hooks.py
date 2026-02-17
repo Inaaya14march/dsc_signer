@@ -16,6 +16,9 @@ doc_events = {
         "on_submit": "dsc_signer.api.auto_sign_on_submit"
     }
 }
+doctype_list_js = {
+    "Sales Invoice": "public/js/batch_sign.js"
+}
 # Apps
 # ------------------
 

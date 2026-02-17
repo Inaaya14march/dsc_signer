@@ -21,7 +21,8 @@
   "auto_sign_on_submit",
   "allow_re_sign",
   "default_signer_label",
-  "description"
+  "description",
+  "signature_mode"
  ],
  "fields": [
   {
@@ -137,12 +138,20 @@
    "fieldname": "description",
    "fieldtype": "Small Text",
    "label": "Description"
+  },
+  {
+   "default": "Single Page",
+   "fieldname": "signature_mode",
+   "fieldtype": "Select",
+   "label": "Signature Mode",
+   "options": "Single Page\nAll Pages\nLast Page",
+   "reqd": 1
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-02-16 22:51:41.595231",
+ "modified": "2026-02-17 08:17:33.614526",
  "modified_by": "Administrator",
  "module": "Dsc Signer",
  "name": "DSC Signature Profile",

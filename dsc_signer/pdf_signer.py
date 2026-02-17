@@ -7,42 +7,60 @@ from PyPDF2 import PdfReader, PdfWriter
 from datetime import datetime
 import os
 
-
 def add_signature_box(input_pdf, temp_pdf, signer_name,
-                      x=350, y=60, box_width=200, box_height=50):
+                      x=350, y=60, box_width=200, box_height=50,
+                      page_number=1, mode="Single Page"):
 
     overlay_reader = PdfReader(input_pdf)
-    first_page = overlay_reader.pages[0]
+    total_pages = len(overlay_reader.pages)
 
-    page_width = float(first_page.mediabox.width)
-    page_height = float(first_page.mediabox.height)
+    def draw_box(page):
+        page_width = float(page.mediabox.width)
+        page_height = float(page.mediabox.height)
 
-    packet = BytesIO()
-    c = canvas.Canvas(packet, pagesize=(page_width, page_height))
+        px = max(0, min(x, page_width - box_width))
+        py = max(0, min(y, page_height - box_height))
 
-    x = max(0, min(x, page_width - box_width))
-    y = max(0, min(y, page_height - box_height))
+        packet = BytesIO()
+        c = canvas.Canvas(packet, pagesize=(page_width, page_height))
 
-    c.setStrokeColor(black)
-    c.rect(x, y, box_width, box_height, fill=0)
+        c.setStrokeColor(black)
+        c.rect(px, py, box_width, box_height, fill=0)
 
-    c.setFont("Helvetica-Bold", 10)
-    c.drawString(x + 10, y + 30, f"For : {signer_name}")
+        c.setFont("Helvetica-Bold", 10)
+        c.drawString(px + 10, py + 30, f"For : {signer_name}")
 
-    timestamp = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
-    c.setFont("Helvetica", 10)
-    c.drawString(x + 10, y + 15, f"Date: {timestamp}")
+        timestamp = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
+        c.setFont("Helvetica", 10)
+        c.drawString(px + 10, py + 15, f"Date: {timestamp}")
 
-    c.save()
-    packet.seek(0)
+        c.save()
+        packet.seek(0)
 
-    overlay_pdf = PdfReader(packet)
+        overlay_pdf = PdfReader(packet)
+        page.merge_page(overlay_pdf.pages[0])
+        return page
+
     writer = PdfWriter()
 
-    for i in range(len(overlay_reader.pages)):
+    for i in range(total_pages):
         page = overlay_reader.pages[i]
-        if i == 0:
-            page.merge_page(overlay_pdf.pages[0])
+
+        apply_box = False
+
+        if mode == "All Pages":
+            apply_box = True
+
+        elif mode == "Last Page":
+            apply_box = (i == total_pages - 1)
+
+        else:  # Single Page
+            target = max(0, min(page_number - 1, total_pages - 1))
+            apply_box = (i == target)
+
+        if apply_box:
+            page = draw_box(page)
+
         writer.add_page(page)
 
     with open(temp_pdf, "wb") as f:
@@ -70,7 +88,9 @@ def sign_pdf(input_pdf, output_pdf, pfx_path, pfx_password, profile):
         x=x,
         y=y,
         box_width=width,
-        box_height=height
+        box_height=height,
+        page_number=profile.page_number or 1,
+        mode=profile.signature_mode or "Single Page"
     )
     #add_signature_box(input_pdf, temp_pdf, signer_name)
     meta = signers.PdfSignatureMetadata(

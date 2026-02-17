@@ -100,7 +100,40 @@ def auto_sign_on_submit(doc, method):
     profile = profiles[0]
 
     sign_with_profile(doc.name, profile)
+
+@frappe.whitelist()
+def batch_sign(doctype=None, names=None, profile=None):
+    if not doctype or not names or not profile:
+        frappe.throw("Missing parameters")
+
+    names = frappe.parse_json(names)
+
+    results = []
+    profiles = frappe.get_all(
+        "DSC Signature Profile",
+        filters={
+            "document_type": doctype,
+            "active": 1
+        },
+        pluck="name"
+    )
+
+    if not profiles:
+        return
+
+    profiledt = profiles[0]
     
+    #sign_with_profile(doc.name, profile)
+
+    for name in names:
+        try:
+            sign_with_profile(name, profiledt)
+            results.append({"doc": name, "status": "Signed"})
+        except Exception as e:
+            results.append({"doc": name, "status": str(e)})
+
+    return results
+
 @frappe.whitelist()
 def preview_with_profile(docname=None, profile=None):
     if not docname or not profile:
@@ -138,7 +171,9 @@ def preview_with_profile(docname=None, profile=None):
         x=x,
         y=y,
         box_width=width,
-        box_height=height
+        box_height=height,
+        page_number=prof.page_number or 1,
+        mode=prof.signature_mode or "Single Page"
     )
 
     with open(preview_pdf, "rb") as f:
