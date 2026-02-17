@@ -11,7 +11,11 @@ app_version = "1.0.0"
 doctype_js = {
     "Sales Invoice": "public/js/sales_invoice_sign.js"
 }
-
+doc_events = {
+    "*": {
+        "on_submit": "dsc_signer.api.auto_sign_on_submit"
+    }
+}
 # Apps
 # ------------------
 

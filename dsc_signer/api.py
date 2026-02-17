@@ -26,13 +26,13 @@ def sign_with_profile(docname=None, profile=None):
     if not docname or not profile:
         frappe.throw("Missing document or profile")
 
-    # Load profile
     prof = frappe.get_doc("DSC Signature Profile", profile)
 
-    # Load document
     doc = frappe.get_doc(prof.document_type, docname)
 
-    # Load DSC settings
+    if not prof.allow_re_sign and is_document_signed(doc.doctype, doc.name):
+        frappe.throw("Document already signed. Re-signing is disabled in profile.")
+
     settings = frappe.get_single("DSC Settings")
     pfx_file = settings.attach_vmcx
     pfx_password = settings.get_password("certificate_password")
@@ -44,7 +44,6 @@ def sign_with_profile(docname=None, profile=None):
         "private", "files", pfx_file.split("/")[-1]
     )
 
-    # Render PDF from print format
     html = frappe.get_print(
         doc.doctype,
         doc.name,
@@ -53,7 +52,6 @@ def sign_with_profile(docname=None, profile=None):
 
     pdf_data = get_pdf(html)
 
-    # Safe temp filenames
     safe_name = docname.replace("/", "_")
 
     unsigned_pdf = f"/tmp/{safe_name}_unsigned.pdf"
@@ -62,10 +60,8 @@ def sign_with_profile(docname=None, profile=None):
     with open(unsigned_pdf, "wb") as f:
         f.write(pdf_data)
 
-    # Sign PDF
     sign_pdf(unsigned_pdf, signed_pdf, pfx_file_path, pfx_password,prof)
 
-    # Save signed file as attachment
     with open(signed_pdf, "rb") as f:
         save_file(
             f"{safe_name}_SIGNED.pdf",
@@ -77,6 +73,34 @@ def sign_with_profile(docname=None, profile=None):
 
     return _("Document signed and attached successfully")
 
+def is_document_signed(doctype, docname):
+    return frappe.db.exists(
+        "File",
+        {
+            "attached_to_doctype": doctype,
+            "attached_to_name": docname,
+            "file_name": ["like", "%SIGNED%"]
+        }
+    )
+
+def auto_sign_on_submit(doc, method):
+    profiles = frappe.get_all(
+        "DSC Signature Profile",
+        filters={
+            "document_type": doc.doctype,
+            "active": 1,
+            "auto_sign_on_submit": 1
+        },
+        pluck="name"
+    )
+
+    if not profiles:
+        return
+
+    profile = profiles[0]
+
+    sign_with_profile(doc.name, profile)
+    
 @frappe.whitelist()
 def preview_with_profile(docname=None, profile=None):
     if not docname or not profile:
@@ -100,8 +124,6 @@ def preview_with_profile(docname=None, profile=None):
 
     with open(unsigned_pdf, "wb") as f:
         f.write(pdf_data)
-
-    # Use fake signer label for preview
     signer_name = prof.default_signer_label or "Preview Signature"
 
     x = prof.x_positionpoints or 350

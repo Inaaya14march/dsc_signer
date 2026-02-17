@@ -84,7 +84,6 @@ def sign_pdf(input_pdf, output_pdf, pfx_path, pfx_password, profile):
         pdf_signer = signers.PdfSigner(
             signature_meta=meta,
             signer=signer
-            #new_field_spec=signature_field_spec
         )
 
         with open(output_pdf, "wb") as outf:
