@@ -1,0 +1,170 @@
+{
+ "actions": [],
+ "autoname": "field:profile_name",
+ "creation": "2026-02-16 09:04:03.930947",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "profile_info_column",
+  "profile_name",
+  "document_type",
+  "print_format",
+  "active",
+  "signature_placement_section",
+  "signature_slot",
+  "page_number",
+  "x_positionpoints",
+  "y_positionpoints",
+  "box_widthponts",
+  "box_hieghtponts",
+  "behavior_section",
+  "auto_sign_on_submit",
+  "allow_re_sign",
+  "default_signer_label",
+  "description"
+ ],
+ "fields": [
+  {
+   "fieldname": "profile_info_column",
+   "fieldtype": "Column Break",
+   "label": "Profile Info"
+  },
+  {
+   "fieldname": "profile_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Profile Name",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "document_type",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Document Type",
+   "options": "DocType",
+   "reqd": 1
+  },
+  {
+   "fieldname": "print_format",
+   "fieldtype": "Link",
+   "label": "Print Format",
+   "options": "Print Format",
+   "reqd": 1
+  },
+  {
+   "default": "1",
+   "fieldname": "active",
+   "fieldtype": "Check",
+   "label": "Active"
+  },
+  {
+   "fieldname": "signature_placement_section",
+   "fieldtype": "Section Break",
+   "label": "Signature Placement"
+  },
+  {
+   "default": "1",
+   "fieldname": "signature_slot",
+   "fieldtype": "Int",
+   "label": "Signature Slot",
+   "non_negative": 1,
+   "reqd": 1
+  },
+  {
+   "default": "1",
+   "fieldname": "page_number",
+   "fieldtype": "Int",
+   "label": "Page Number",
+   "non_negative": 1,
+   "reqd": 1
+  },
+  {
+   "default": "350",
+   "fieldname": "x_positionpoints",
+   "fieldtype": "Float",
+   "label": "X Position(Points)",
+   "non_negative": 1,
+   "reqd": 1
+  },
+  {
+   "default": "60",
+   "fieldname": "y_positionpoints",
+   "fieldtype": "Float",
+   "label": "Y Position(Points)",
+   "non_negative": 1,
+   "reqd": 1
+  },
+  {
+   "default": "200",
+   "fieldname": "box_widthponts",
+   "fieldtype": "Float",
+   "label": "Box Width(Ponts)",
+   "non_negative": 1,
+   "reqd": 1
+  },
+  {
+   "default": "50",
+   "fieldname": "box_hieghtponts",
+   "fieldtype": "Float",
+   "label": "Box Hieght(Ponts)",
+   "non_negative": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "behavior_section",
+   "fieldtype": "Section Break",
+   "label": "Behavior"
+  },
+  {
+   "default": "0",
+   "fieldname": "auto_sign_on_submit",
+   "fieldtype": "Check",
+   "label": "Auto Sign On Submit"
+  },
+  {
+   "default": "0",
+   "fieldname": "allow_re_sign",
+   "fieldtype": "Check",
+   "label": "Allow Re sign"
+  },
+  {
+   "fieldname": "default_signer_label",
+   "fieldtype": "Data",
+   "label": "Default Signer Label"
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Small Text",
+   "label": "Description"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-02-16 22:51:41.595231",
+ "modified_by": "Administrator",
+ "module": "Dsc Signer",
+ "name": "DSC Signature Profile",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "rows_threshold_for_grid_search": 20,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
