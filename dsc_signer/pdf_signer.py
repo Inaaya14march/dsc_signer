@@ -18,8 +18,14 @@ def add_signature_box(input_pdf, temp_pdf, signer_name,
         page_width = float(page.mediabox.width)
         page_height = float(page.mediabox.height)
 
-        px = max(0, min(x, page_width - box_width))
-        py = max(0, min(y, page_height - box_height))
+        if mode == "Last Page":
+            margin = 20  
+            px = page_width - box_width - margin
+            py = margin
+        else:
+            px = max(0, min(x, page_width - box_width))
+            py = max(0, min(y, page_height - box_height))
+
 
         packet = BytesIO()
         c = canvas.Canvas(packet, pagesize=(page_width, page_height))
