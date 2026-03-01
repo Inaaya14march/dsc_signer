@@ -11,6 +11,7 @@ dependencies = [
     "reportlab==4.2.2",
     "pyHanko==0.33.0",
     "PyPDF2==3.0.1",
+    "pymupdf==1.19.9",
     # "frappe~=15.0.0" # Installed and managed by bench.
 ]
 
