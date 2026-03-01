@@ -66,10 +66,6 @@ def add_signature_box(input_pdf, temp_pdf, signer_name,
         return page
 
     def get_last_line_y(page):
-        """
-        This function calculates where the last line of text is on the page.
-        It assumes that text is rendered in a vertical format and the bottom-most text line is the last.
-        """
         page_width = float(page.mediabox.width)
         page_height = float(page.mediabox.height)
         return page_height -200
@@ -101,9 +97,39 @@ def add_signature_box(input_pdf, temp_pdf, signer_name,
 
                 # Convert PyMuPDF y (top-left origin) to PDF y (bottom-left origin)
                 py = page_height - last_y - box_height - 10
+                if py < 20:
+                    writer.add_page(page)
+
+                    from PyPDF2 import PageObject
+                    new_page = PageObject.create_blank_page(
+                        width=page_width,
+                        height=page_height
+                    )
+
+                    packet = BytesIO()
+                    c = canvas.Canvas(packet, pagesize=(page_width, page_height))
+
+                    c.setStrokeColor(black)
+                    c.rect(px, page_height - 150, box_width, box_height, fill=0)
+
+                    c.setFont("Helvetica-Bold", 10)
+                    c.drawString(px + 10, page_height - 120, f"For : {signer_name}")
+
+                    timestamp = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
+                    c.setFont("Helvetica", 10)
+                    c.drawString(px + 10, page_height - 135, f"Date: {timestamp}")
+
+                    c.save()
+                    packet.seek(0)
+
+                    overlay_pdf = PdfReader(packet)
+                    new_page.merge_page(overlay_pdf.pages[0])
+
+                    writer.add_page(new_page)
+                    continue
 
 
-        else:  # Single Page
+        else:  
             target = max(0, min(page_number - 1, total_pages - 1))
             if i == target:
                 apply_box = True
