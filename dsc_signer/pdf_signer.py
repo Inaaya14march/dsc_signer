@@ -1,3 +1,4 @@
+import fitz
 from pyhanko.sign import signers
 from pyhanko.pdf_utils.incremental_writer import IncrementalPdfFileWriter
 from reportlab.pdfgen import canvas
@@ -7,6 +8,32 @@ from PyPDF2 import PdfReader, PdfWriter
 from datetime import datetime
 import os
 
+from PyPDF2 import PdfReader, PdfWriter
+from reportlab.lib.pagesizes import letter
+
+from PyPDF2 import PdfReader, PdfWriter
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
+from io import BytesIO
+from datetime import datetime
+from reportlab.lib.colors import black
+
+def get_last_text_y_position(pdf_path, page_index):
+    doc = fitz.open(pdf_path)
+    page = doc[page_index]
+
+    blocks = page.get_text("blocks")
+
+    if not blocks:
+        return 100  # fallback if page has no text
+
+    
+    
+    lowest_y = max(block[3] for block in blocks)
+
+    doc.close()
+    return lowest_y
+    
 def add_signature_box(input_pdf, temp_pdf, signer_name,
                       x=350, y=60, box_width=200, box_height=50,
                       page_number=1, mode="Single Page"):
@@ -14,18 +41,9 @@ def add_signature_box(input_pdf, temp_pdf, signer_name,
     overlay_reader = PdfReader(input_pdf)
     total_pages = len(overlay_reader.pages)
 
-    def draw_box(page):
+    def draw_box(page, px, py):
         page_width = float(page.mediabox.width)
         page_height = float(page.mediabox.height)
-
-        if mode == "Last Page":
-            margin = 20  
-            px = page_width - box_width - margin
-            py = margin
-        else:
-            px = max(0, min(x, page_width - box_width))
-            py = max(0, min(y, page_height - box_height))
-
 
         packet = BytesIO()
         c = canvas.Canvas(packet, pagesize=(page_width, page_height))
@@ -47,30 +65,60 @@ def add_signature_box(input_pdf, temp_pdf, signer_name,
         page.merge_page(overlay_pdf.pages[0])
         return page
 
+    def get_last_line_y(page):
+        """
+        This function calculates where the last line of text is on the page.
+        It assumes that text is rendered in a vertical format and the bottom-most text line is the last.
+        """
+        page_width = float(page.mediabox.width)
+        page_height = float(page.mediabox.height)
+        return page_height -200
+
     writer = PdfWriter()
 
     for i in range(total_pages):
         page = overlay_reader.pages[i]
-
         apply_box = False
 
         if mode == "All Pages":
             apply_box = True
 
         elif mode == "Last Page":
-            apply_box = (i == total_pages - 1)
+            if i == total_pages - 1:  # On the last page
+                page_width = float(page.mediabox.width)
+                page_height = float(page.mediabox.height)
+                
+                #last_line_y = get_last_line_y(page)
+                # Set the x-coordinate for the signature box to the right
+                #px = max(0, min(x, float(page.mediabox.width) - box_width))
+                # Ensure the box is placed just below the last line with some margin
+                #py = max(last_line_y - box_height, 20)  # Ensure there's space from the bottom
+                apply_box = True
+                last_y = get_last_text_y_position(input_pdf, i)
+
+                margin = 20
+                px = page_width - box_width - margin
+
+                # Convert PyMuPDF y (top-left origin) to PDF y (bottom-left origin)
+                py = page_height - last_y - box_height - 10
+
 
         else:  # Single Page
             target = max(0, min(page_number - 1, total_pages - 1))
-            apply_box = (i == target)
+            if i == target:
+                apply_box = True
 
         if apply_box:
-            page = draw_box(page)
+            if mode == "Last Page" and i == total_pages - 1:
+                page = draw_box(page, px, py)
+            else:
+                page = draw_box(page, x, y)
 
         writer.add_page(page)
 
     with open(temp_pdf, "wb") as f:
         writer.write(f)
+
 
 def sign_pdf(input_pdf, output_pdf, pfx_path, pfx_password, profile):
     temp_pdf = "temp_with_box.pdf"
