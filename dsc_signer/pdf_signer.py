@@ -93,11 +93,14 @@ def add_signature_box(input_pdf, temp_pdf, signer_name,
                 last_y = get_last_text_y_position(input_pdf, i)
 
                 margin = 20
+                gap = 10
                 px = page_width - box_width - margin
 
-                # Convert PyMuPDF y (top-left origin) to PDF y (bottom-left origin)
-                py = page_height - last_y - box_height - 10
-                if py < 20:
+                available_space = page_height - last_y
+
+                if available_space >= (box_height + gap + margin):
+                    py = page_height - last_y - box_height - gap
+                else:
                     writer.add_page(page)
 
                     from PyPDF2 import PageObject
