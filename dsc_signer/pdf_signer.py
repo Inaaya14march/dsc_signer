@@ -7,6 +7,7 @@ from io import BytesIO
 from PyPDF2 import PdfReader, PdfWriter
 from datetime import datetime
 import os
+import pdfplumber
 
 from PyPDF2 import PdfReader, PdfWriter
 from reportlab.lib.pagesizes import letter
@@ -33,7 +34,18 @@ def get_last_text_y_position(pdf_path, page_index):
 
     doc.close()
     return lowest_y
-    
+
+def get_gstin_line_y(pdf_path, page_index):
+    with pdfplumber.open(pdf_path) as pdf:
+        page = pdf.pages[page_index]
+
+        words = page.extract_words()
+
+        for w in words:
+            if w["text"].startswith("GSTIN"):
+                return page.height - w["top"]
+
+    return None
 def add_signature_box(input_pdf, temp_pdf, signer_name,
                       x=350, y=60, box_width=200, box_height=50,
                       page_number=1, mode="Single Page"):
@@ -49,6 +61,13 @@ def add_signature_box(input_pdf, temp_pdf, signer_name,
         c = canvas.Canvas(packet, pagesize=(page_width, page_height))
 
         c.setStrokeColor(black)
+        if py < 5:
+            py = 5  # keep minimum bottom margin
+
+        if py + box_height > page_height:
+            top_margin = 5
+            py = page_height - box_height - top_margin
+
         c.rect(px, py, box_width, box_height, fill=0)
 
         c.setFont("Helvetica-Bold", 10)
@@ -63,91 +82,82 @@ def add_signature_box(input_pdf, temp_pdf, signer_name,
 
         overlay_pdf = PdfReader(packet)
         page.merge_page(overlay_pdf.pages[0])
-        return page
 
-    def get_last_line_y(page):
-        page_width = float(page.mediabox.width)
-        page_height = float(page.mediabox.height)
-        return page_height -200
+        return page
 
     writer = PdfWriter()
 
     for i in range(total_pages):
+
         page = overlay_reader.pages[i]
         apply_box = False
+
+        px = x
+        py = y
 
         if mode == "All Pages":
             apply_box = True
 
         elif mode == "Last Page":
-            if i == total_pages - 1:  # On the last page
+
+            if i == total_pages - 1:
+
                 page_width = float(page.mediabox.width)
                 page_height = float(page.mediabox.height)
-                
-                #last_line_y = get_last_line_y(page)
-                # Set the x-coordinate for the signature box to the right
-                #px = max(0, min(x, float(page.mediabox.width) - box_width))
-                # Ensure the box is placed just below the last line with some margin
-                #py = max(last_line_y - box_height, 20)  # Ensure there's space from the bottom
-                apply_box = True
-                last_y = get_last_text_y_position(input_pdf, i)
+
+                gstin_y = get_gstin_line_y(input_pdf, i)
 
                 margin = 20
-                gap = 10
+                gap = 30
+
                 px = page_width - box_width - margin
 
-                available_space = page_height - last_y
+                if gstin_y:
 
-                if available_space >= (box_height + gap + margin):
-                    py = page_height - last_y - box_height - gap
-                else:
-                    writer.add_page(page)
+                    py = gstin_y - box_height - gap
 
-                    from PyPDF2 import PageObject
-                    new_page = PageObject.create_blank_page(
-                        width=page_width,
-                        height=page_height
-                    )
+                    # If box goes outside page
+                    if py < 60:
 
-                    packet = BytesIO()
-                    c = canvas.Canvas(packet, pagesize=(page_width, page_height))
+                        writer.add_page(page)
 
-                    c.setStrokeColor(black)
-                    c.rect(px, page_height - 150, box_width, box_height, fill=0)
+                        from PyPDF2._page import PageObject
+                        new_page = PageObject.create_blank_page(
+                            width=page_width,
+                            height=page_height
+                        )
 
-                    c.setFont("Helvetica-Bold", 10)
-                    c.drawString(px + 10, page_height - 120, f"For : {signer_name}")
+                        # place box on top-right of new page
+                        top_margin = 20
+                        px = page_width - box_width - 40
+                        new_py = page_height - top_margin
 
-                    timestamp = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
-                    c.setFont("Helvetica", 10)
-                    c.drawString(px + 10, page_height - 135, f"Date: {timestamp}")
-
-                    c.save()
-                    packet.seek(0)
-
-                    overlay_pdf = PdfReader(packet)
-                    new_page.merge_page(overlay_pdf.pages[0])
-
-                    writer.add_page(new_page)
-                    continue
+                        new_page = draw_box(new_page, px, new_py)
 
 
-        else:  
+                        writer.add_page(new_page)
+                        continue
+
+                apply_box = True
+
+        else:
+
             target = max(0, min(page_number - 1, total_pages - 1))
+
             if i == target:
                 apply_box = True
 
         if apply_box:
+
             if mode == "Last Page" and i == total_pages - 1:
                 page = draw_box(page, px, py)
             else:
-                page = draw_box(page, x, y)
+                page = draw_box(page, x, py)
 
         writer.add_page(page)
 
     with open(temp_pdf, "wb") as f:
         writer.write(f)
-
 
 def sign_pdf(input_pdf, output_pdf, pfx_path, pfx_password, profile):
     temp_pdf = "temp_with_box.pdf"
