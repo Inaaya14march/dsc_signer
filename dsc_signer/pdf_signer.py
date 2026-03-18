@@ -42,7 +42,7 @@ def get_gstin_line_y(pdf_path, page_index):
         words = page.extract_words()
 
         for w in words:
-            if w["text"].startswith("GSTIN"):
+            if w["text"].startswith("GSTIN:"):
                 return page.height - w["top"]
 
     return None
